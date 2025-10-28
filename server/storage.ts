@@ -184,7 +184,12 @@ export class MemStorage implements IStorage {
 
   async createProject(insertProject: InsertProject): Promise<Project> {
     const id = randomUUID();
-    const project: Project = { ...insertProject, id, createdAt: new Date() };
+    const project: Project = { 
+      ...insertProject, 
+      id, 
+      createdAt: new Date(),
+      progress: insertProject.progress ?? 0
+    };
     this.projects.set(id, project);
     return project;
   }
@@ -214,7 +219,12 @@ export class MemStorage implements IStorage {
 
   async createAsset(insertAsset: InsertAsset): Promise<Asset> {
     const id = randomUUID();
-    const asset: Asset = { ...insertAsset, id, createdAt: new Date() };
+    const asset: Asset = { 
+      ...insertAsset, 
+      id, 
+      createdAt: new Date(),
+      url: insertAsset.url ?? null
+    };
     this.assets.set(id, asset);
     return asset;
   }
@@ -265,7 +275,12 @@ export class MemStorage implements IStorage {
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const id = randomUUID();
-    const message: Message = { ...insertMessage, id, createdAt: new Date() };
+    const message: Message = { 
+      ...insertMessage, 
+      id, 
+      createdAt: new Date(),
+      needsReview: insertMessage.needsReview ?? false
+    };
     this.messages.set(id, message);
     return message;
   }
