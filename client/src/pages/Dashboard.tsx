@@ -11,8 +11,36 @@ import {
   FolderKanban,
   BarChart3
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { Project, Message, FeedbackItem } from "@shared/schema";
+
+interface DashboardStats {
+  activeProjects: number;
+  teamUtilization: number;
+  campaignPerformance: number;
+  clientSatisfaction: number;
+}
 
 export default function Dashboard() {
+  const { data: stats } = useQuery<DashboardStats>({
+    queryKey: ['/api/dashboard/stats']
+  });
+
+  const { data: projects } = useQuery<Project[]>({
+    queryKey: ['/api/projects']
+  });
+
+  const { data: messages } = useQuery<Message[]>({
+    queryKey: ['/api/messages']
+  });
+
+  const { data: feedbackItems } = useQuery<FeedbackItem[]>({
+    queryKey: ['/api/feedback']
+  });
+
+  const recentProjects = projects?.slice(0, 4) || [];
+  const pendingTasks = feedbackItems?.slice(0, 3) || [];
+
   return (
     <Layout>
       <div className="space-y-8">
@@ -21,41 +49,38 @@ export default function Dashboard() {
           <p className="text-muted-foreground">Welcome back! Here's what's happening with your agency today.</p>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Active Projects"
-            value="24"
+            value={stats?.activeProjects.toString() || "0"}
             change="+12%"
             trend="up"
             icon={FolderKanban}
           />
           <StatCard
             title="Team Utilization"
-            value="87%"
+            value={`${stats?.teamUtilization || 0}%`}
             change="+5%"
             trend="up"
             icon={Users}
           />
           <StatCard
             title="Campaign Performance"
-            value="94%"
+            value={`${stats?.campaignPerformance || 0}%`}
             change="+8%"
             trend="up"
             icon={BarChart3}
           />
           <StatCard
             title="Client Satisfaction"
-            value="4.8/5"
+            value={`${stats?.clientSatisfaction || 0}/5`}
             change="+0.3"
             trend="up"
             icon={CheckCircle2}
           />
         </div>
 
-        {/* Main Content Grid */}
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Recent Projects */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
@@ -64,32 +89,35 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {recentProjects.map((project, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-lg hover-elevate transition-colors" data-testid={`project-${i}`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg ${project.color} flex items-center justify-center`}>
-                      <FolderKanban className="w-5 h-5 text-white" />
+              {recentProjects.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">No projects yet</div>
+              ) : (
+                recentProjects.map((project, i) => (
+                  <div key={project.id} className="flex items-center justify-between p-3 rounded-lg hover-elevate transition-colors" data-testid={`project-${i}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${project.color} flex items-center justify-center`}>
+                        <span className="text-lg">{project.icon}</span>
+                      </div>
+                      <div>
+                        <div className="font-medium text-foreground">{project.name}</div>
+                        <div className="text-sm text-muted-foreground">{project.client}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium text-foreground">{project.name}</div>
-                      <div className="text-sm text-muted-foreground">{project.client}</div>
+                    <div className="text-right">
+                      <div className={`text-sm font-medium ${
+                        project.status === 'On Track' ? 'text-chart-3' :
+                        project.status === 'At Risk' ? 'text-chart-4' : 'text-muted-foreground'
+                      }`}>
+                        {project.status}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{project.deadline}</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className={`text-sm font-medium ${
-                      project.status === 'On Track' ? 'text-chart-3' :
-                      project.status === 'At Risk' ? 'text-chart-4' : 'text-muted-foreground'
-                    }`}>
-                      {project.status}
-                    </div>
-                    <div className="text-xs text-muted-foreground">{project.deadline}</div>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
 
-          {/* Pending Tasks */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
@@ -98,27 +126,30 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {pendingTasks.map((task, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-lg hover-elevate transition-colors" data-testid={`task-${i}`}>
-                  <div className={`w-8 h-8 rounded-lg ${task.urgency === 'high' ? 'bg-destructive' : 'bg-chart-4'} flex items-center justify-center flex-shrink-0`}>
-                    <AlertCircle className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-foreground">{task.title}</div>
-                    <div className="text-sm text-muted-foreground">{task.project}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Clock className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{task.time}</span>
+              {pendingTasks.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">No pending approvals</div>
+              ) : (
+                pendingTasks.map((task, i) => (
+                  <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg hover-elevate transition-colors" data-testid={`task-${i}`}>
+                    <div className={`w-8 h-8 rounded-lg ${task.priority === 'High' ? 'bg-destructive' : 'bg-chart-4'} flex items-center justify-center flex-shrink-0`}>
+                      <AlertCircle className="w-4 h-4 text-white" />
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-foreground">{task.title}</div>
+                      <div className="text-sm text-muted-foreground">{task.client}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Clock className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">{task.time}</span>
+                      </div>
+                    </div>
+                    <Button size="sm" data-testid={`button-review-${i}`}>Review</Button>
                   </div>
-                  <Button size="sm" data-testid={`button-review-${i}`}>Review</Button>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Activity Timeline */}
         <Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
@@ -173,20 +204,6 @@ function StatCard({ title, value, change, trend, icon: Icon }: any) {
     </Card>
   );
 }
-
-//todo: remove mock functionality
-const recentProjects = [
-  { name: "Brand Redesign", client: "TechCorp Inc", status: "On Track", deadline: "Due in 5 days", color: "bg-gradient-to-br from-primary to-chart-1" },
-  { name: "Product Launch", client: "StartupXYZ", status: "At Risk", deadline: "Due in 2 days", color: "bg-gradient-to-br from-accent to-chart-2" },
-  { name: "Social Campaign", client: "FashionCo", status: "On Track", deadline: "Due in 8 days", color: "bg-gradient-to-br from-chart-3 to-accent" },
-  { name: "Video Production", client: "MediaGroup", status: "On Track", deadline: "Due in 12 days", color: "bg-gradient-to-br from-chart-4 to-chart-3" }
-];
-
-const pendingTasks = [
-  { title: "Client Feedback Review", project: "Brand Redesign", time: "2 hours ago", urgency: "high" },
-  { title: "Asset Approval Needed", project: "Product Launch", time: "4 hours ago", urgency: "high" },
-  { title: "Campaign Copy Review", project: "Social Campaign", time: "Yesterday", urgency: "medium" }
-];
 
 const activities = [
   { icon: CheckCircle2, title: "Project Completed", description: "Website Redesign for TechStartup finished", time: "2 hours ago", color: "bg-chart-3" },

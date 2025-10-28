@@ -5,10 +5,36 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Search, Filter, MoreVertical, FileVideo, FileImage, Box, FileText } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import type { Asset } from "@shared/schema";
+
+const getIconForType = (type: string) => {
+  switch (type.toLowerCase()) {
+    case 'video': return FileVideo;
+    case 'image': return FileImage;
+    case '3d model': return Box;
+    case 'document': return FileText;
+    default: return FileText;
+  }
+};
 
 export default function Assets() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
+
+  const { data: assets, isLoading } = useQuery<Asset[]>({
+    queryKey: ['/api/assets']
+  });
+
+  const filteredAssets = assets?.filter(asset => {
+    const matchesSearch = asset.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = filterType === "all" || 
+      (filterType === "images" && asset.type === "Image") ||
+      (filterType === "videos" && asset.type === "Video") ||
+      (filterType === "3d" && asset.type === "3D Model") ||
+      (filterType === "docs" && asset.type === "Document");
+    return matchesSearch && matchesType;
+  }) || [];
 
   return (
     <Layout>
@@ -28,7 +54,6 @@ export default function Assets() {
           </Button>
         </div>
 
-        {/* Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -46,7 +71,6 @@ export default function Assets() {
           </Button>
         </div>
 
-        {/* Asset Type Tabs */}
         <div className="flex flex-wrap gap-2">
           <Button 
             variant={filterType === "all" ? "outline" : "ghost"} 
@@ -90,50 +114,65 @@ export default function Assets() {
           </Button>
         </div>
 
-        {/* Assets Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {assets.map((asset, i) => (
-            <Card key={i} className="group hover:shadow-lg transition-all duration-300 hover:border-primary/50 overflow-hidden hover-elevate" data-testid={`asset-card-${i}`}>
-              <div className={`h-48 ${asset.thumbnail} flex items-center justify-center relative`}>
-                <asset.icon className="w-16 h-16 text-white/80" />
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="absolute top-2 right-2 bg-card/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                  data-testid={`button-asset-menu-${i}`}
-                  onClick={() => console.log(`Menu for ${asset.name}`)}
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </div>
-              <CardContent className="p-4 space-y-3">
-                <div>
-                  <h3 className="font-medium text-foreground truncate">{asset.name}</h3>
-                  <p className="text-sm text-muted-foreground">{asset.size}</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <Badge variant="secondary">{asset.type}</Badge>
-                  <span className="text-xs text-muted-foreground">{asset.date}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="text-center py-12 text-muted-foreground">Loading assets...</div>
+        ) : filteredAssets.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No assets found</p>
+            <Button className="mt-4 gap-2" onClick={() => console.log('Upload first asset')}>
+              <Upload className="w-4 h-4" />
+              Upload Your First Asset
+            </Button>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredAssets.map((asset, i) => {
+              const Icon = getIconForType(asset.type);
+              return (
+                <Card key={asset.id} className="group hover:shadow-lg transition-all duration-300 hover:border-primary/50 overflow-hidden hover-elevate" data-testid={`asset-card-${i}`}>
+                  <div className={`h-48 ${asset.thumbnail} flex items-center justify-center relative`}>
+                    <Icon className="w-16 h-16 text-white/80" />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="absolute top-2 right-2 bg-card/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      data-testid={`button-asset-menu-${i}`}
+                      onClick={() => console.log(`Menu for ${asset.name}`)}
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <CardContent className="p-4 space-y-3">
+                    <div>
+                      <h3 className="font-medium text-foreground truncate">{asset.name}</h3>
+                      <p className="text-sm text-muted-foreground">{asset.size}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary">{asset.type}</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(asset.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
 
-        {/* Storage Info */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-semibold text-foreground">Storage Usage</h3>
-                <p className="text-sm text-muted-foreground">847 GB of 1 TB used</p>
+                <p className="text-sm text-muted-foreground">{assets?.length || 0} assets stored</p>
               </div>
               <Button variant="outline" size="sm" data-testid="button-upgrade-storage" onClick={() => console.log('Upgrade clicked')}>
                 Upgrade
               </Button>
             </div>
             <div className="h-2 bg-secondary rounded-full overflow-hidden">
-              <div className="h-full w-[85%] bg-gradient-to-r from-primary to-accent rounded-full" />
+              <div className="h-full w-[15%] bg-gradient-to-r from-primary to-accent rounded-full" />
             </div>
           </CardContent>
         </Card>
@@ -141,15 +180,3 @@ export default function Assets() {
     </Layout>
   );
 }
-
-//todo: remove mock functionality
-const assets = [
-  { name: "hero-banner.mp4", size: "245 MB", type: "Video", date: "Mar 15", icon: FileVideo, thumbnail: "bg-gradient-to-br from-primary to-accent" },
-  { name: "product-mockup.png", size: "12 MB", type: "Image", date: "Mar 14", icon: FileImage, thumbnail: "bg-gradient-to-br from-accent to-chart-4" },
-  { name: "character-model.blend", size: "89 MB", type: "3D Model", date: "Mar 13", icon: Box, thumbnail: "bg-gradient-to-br from-chart-3 to-primary" },
-  { name: "brand-guidelines.pdf", size: "5 MB", type: "Document", date: "Mar 12", icon: FileText, thumbnail: "bg-gradient-to-br from-chart-4 to-accent" },
-  { name: "animation-loop.mp4", size: "178 MB", type: "Video", date: "Mar 11", icon: FileVideo, thumbnail: "bg-gradient-to-br from-primary to-chart-3" },
-  { name: "logo-variations.png", size: "8 MB", type: "Image", date: "Mar 10", icon: FileImage, thumbnail: "bg-gradient-to-br from-accent to-primary" },
-  { name: "building-render.fbx", size: "134 MB", type: "3D Model", date: "Mar 9", icon: Box, thumbnail: "bg-gradient-to-br from-chart-4 to-chart-3" },
-  { name: "case-study.pdf", size: "15 MB", type: "Document", date: "Mar 8", icon: FileText, thumbnail: "bg-gradient-to-br from-primary to-accent" }
-];

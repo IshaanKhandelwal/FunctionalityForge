@@ -3,8 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, TrendingUp, Eye, MousePointer, DollarSign, BarChart3 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { Campaign } from "@shared/schema";
 
 export default function Marketing() {
+  const { data: campaigns, isLoading } = useQuery<Campaign[]>({
+    queryKey: ['/api/campaigns']
+  });
+
   return (
     <Layout>
       <div className="space-y-8">
@@ -19,7 +25,6 @@ export default function Marketing() {
           </Button>
         </div>
 
-        {/* Performance Metrics */}
         <div className="grid md:grid-cols-4 gap-6">
           <Card>
             <CardContent className="p-6">
@@ -78,100 +83,73 @@ export default function Marketing() {
           </Card>
         </div>
 
-        {/* Active Campaigns */}
         <Card>
           <CardHeader>
             <CardTitle>Active Campaigns</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {campaigns.map((campaign, i) => (
-                <div key={i} className="p-4 rounded-lg border border-card-border hover:border-primary/50 transition-all hover-elevate" data-testid={`campaign-${i}`}>
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-lg ${campaign.color} flex items-center justify-center text-2xl`}>
-                        {campaign.icon}
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading campaigns...</div>
+            ) : !campaigns || campaigns.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">No campaigns yet</p>
+                <Button onClick={() => console.log('Create first campaign')}>
+                  Create Your First Campaign
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {campaigns.map((campaign, i) => (
+                  <div key={campaign.id} className="p-4 rounded-lg border border-card-border hover:border-primary/50 transition-all hover-elevate" data-testid={`campaign-${i}`}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-12 h-12 rounded-lg ${campaign.color} flex items-center justify-center text-2xl`}>
+                          {campaign.icon}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground">{campaign.name}</h3>
+                          <p className="text-sm text-muted-foreground">{campaign.platform}</p>
+                        </div>
+                      </div>
+                      <Badge variant={campaign.status === 'Active' ? 'default' : 'secondary'}>
+                        {campaign.status}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-4 mt-4">
+                      <div>
+                        <div className="text-sm text-muted-foreground">Impressions</div>
+                        <div className="text-lg font-semibold text-foreground">{campaign.impressions}</div>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">{campaign.name}</h3>
-                        <p className="text-sm text-muted-foreground">{campaign.platform}</p>
+                        <div className="text-sm text-muted-foreground">Clicks</div>
+                        <div className="text-lg font-semibold text-foreground">{campaign.clicks}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">CTR</div>
+                        <div className="text-lg font-semibold text-foreground">{campaign.ctr}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Spend</div>
+                        <div className="text-lg font-semibold text-foreground">{campaign.spend}</div>
                       </div>
                     </div>
-                    <Badge variant={campaign.status === 'Active' ? 'default' : 'secondary'}>
-                      {campaign.status}
-                    </Badge>
-                  </div>
 
-                  <div className="grid grid-cols-4 gap-4 mt-4">
-                    <div>
-                      <div className="text-sm text-muted-foreground">Impressions</div>
-                      <div className="text-lg font-semibold text-foreground">{campaign.impressions}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Clicks</div>
-                      <div className="text-lg font-semibold text-foreground">{campaign.clicks}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">CTR</div>
-                      <div className="text-lg font-semibold text-foreground">{campaign.ctr}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Spend</div>
-                      <div className="text-lg font-semibold text-foreground">{campaign.spend}</div>
+                    <div className="flex gap-2 mt-4">
+                      <Button size="sm" variant="outline" data-testid={`button-view-campaign-${i}`} onClick={() => console.log(`View ${campaign.name}`)}>
+                        View Details
+                      </Button>
+                      <Button size="sm" variant="ghost" data-testid={`button-edit-campaign-${i}`} onClick={() => console.log(`Edit ${campaign.name}`)}>
+                        Edit
+                      </Button>
                     </div>
                   </div>
-
-                  <div className="flex gap-2 mt-4">
-                    <Button size="sm" variant="outline" data-testid={`button-view-campaign-${i}`} onClick={() => console.log(`View ${campaign.name}`)}>
-                      View Details
-                    </Button>
-                    <Button size="sm" variant="ghost" data-testid={`button-edit-campaign-${i}`} onClick={() => console.log(`Edit ${campaign.name}`)}>
-                      Edit
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
     </Layout>
   );
 }
-
-//todo: remove mock functionality
-const campaigns = [
-  {
-    name: "Spring Sale 2024",
-    platform: "Google Ads & Meta",
-    icon: "🎯",
-    color: "bg-gradient-to-br from-primary to-accent",
-    status: "Active",
-    impressions: "456K",
-    clicks: "12.3K",
-    ctr: "2.7%",
-    spend: "$8,500"
-  },
-  {
-    name: "Brand Awareness",
-    platform: "Social Media",
-    icon: "📱",
-    color: "bg-gradient-to-br from-accent to-chart-4",
-    status: "Active",
-    impressions: "892K",
-    clicks: "24.1K",
-    ctr: "2.7%",
-    spend: "$12,200"
-  },
-  {
-    name: "Product Launch",
-    platform: "Multi-Channel",
-    icon: "🚀",
-    color: "bg-gradient-to-br from-chart-3 to-primary",
-    status: "Active",
-    impressions: "1.1M",
-    clicks: "38.4K",
-    ctr: "3.5%",
-    spend: "$15,800"
-  }
-];

@@ -86,9 +86,14 @@ export class MemStorage implements IStorage {
   }
 
   private seedData() {
+    const project1Id = randomUUID();
+    const project2Id = randomUUID();
+    const project3Id = randomUUID();
+    const project4Id = randomUUID();
+
     const sampleProjects: Project[] = [
       {
-        id: randomUUID(),
+        id: project1Id,
         name: "Brand Redesign",
         client: "TechCorp Inc",
         icon: "🎨",
@@ -100,7 +105,7 @@ export class MemStorage implements IStorage {
         createdAt: new Date()
       },
       {
-        id: randomUUID(),
+        id: project2Id,
         name: "Product Launch",
         client: "StartupXYZ",
         icon: "🚀",
@@ -112,7 +117,7 @@ export class MemStorage implements IStorage {
         createdAt: new Date()
       },
       {
-        id: randomUUID(),
+        id: project3Id,
         name: "Social Campaign",
         client: "FashionCo",
         icon: "📱",
@@ -122,10 +127,97 @@ export class MemStorage implements IStorage {
         team: "4",
         status: "On Track",
         createdAt: new Date()
+      },
+      {
+        id: project4Id,
+        name: "Video Production",
+        client: "MediaGroup",
+        icon: "🎬",
+        color: "bg-gradient-to-br from-chart-4 to-chart-3",
+        progress: 60,
+        deadline: "Apr 5",
+        team: "5",
+        status: "On Track",
+        createdAt: new Date()
       }
     ];
 
     sampleProjects.forEach(p => this.projects.set(p.id, p));
+
+    const sampleAssets: Asset[] = [
+      { id: randomUUID(), name: "hero-banner.mp4", size: "245 MB", type: "Video", url: null, thumbnail: "bg-gradient-to-br from-primary to-accent", createdAt: new Date() },
+      { id: randomUUID(), name: "product-mockup.png", size: "12 MB", type: "Image", url: null, thumbnail: "bg-gradient-to-br from-accent to-chart-4", createdAt: new Date() },
+      { id: randomUUID(), name: "character-model.blend", size: "89 MB", type: "3D Model", url: null, thumbnail: "bg-gradient-to-br from-chart-3 to-primary", createdAt: new Date() },
+      { id: randomUUID(), name: "brand-guidelines.pdf", size: "5 MB", type: "Document", url: null, thumbnail: "bg-gradient-to-br from-chart-4 to-accent", createdAt: new Date() }
+    ];
+
+    sampleAssets.forEach(a => this.assets.set(a.id, a));
+
+    const sampleCampaigns: Campaign[] = [
+      {
+        id: randomUUID(),
+        name: "Spring Sale 2024",
+        platform: "Google Ads & Meta",
+        icon: "🎯",
+        color: "bg-gradient-to-br from-primary to-accent",
+        status: "Active",
+        impressions: "456K",
+        clicks: "12.3K",
+        ctr: "2.7%",
+        spend: "$8,500",
+        createdAt: new Date()
+      },
+      {
+        id: randomUUID(),
+        name: "Brand Awareness",
+        platform: "Social Media",
+        icon: "📱",
+        color: "bg-gradient-to-br from-accent to-chart-4",
+        status: "Active",
+        impressions: "892K",
+        clicks: "24.1K",
+        ctr: "2.7%",
+        spend: "$12,200",
+        createdAt: new Date()
+      }
+    ];
+
+    sampleCampaigns.forEach(c => this.campaigns.set(c.id, c));
+
+    const sampleMessages: Message[] = [
+      {
+        id: randomUUID(),
+        client: "Sarah Johnson",
+        initials: "SJ",
+        color: "bg-primary",
+        project: "Brand Redesign",
+        content: "Love the new color palette! Can we adjust the typography slightly?",
+        time: "10 min ago",
+        needsReview: true,
+        createdAt: new Date()
+      },
+      {
+        id: randomUUID(),
+        client: "Mike Chen",
+        initials: "MC",
+        color: "bg-accent",
+        project: "Product Launch",
+        content: "The landing page mockup looks fantastic. Approved to proceed!",
+        time: "1 hour ago",
+        needsReview: false,
+        createdAt: new Date()
+      }
+    ];
+
+    sampleMessages.forEach(m => this.messages.set(m.id, m));
+
+    const sampleFeedback: FeedbackItem[] = [
+      { id: randomUUID(), title: "Logo Size Adjustment", client: "TechCorp Inc", priority: "High", time: "30 min ago", createdAt: new Date() },
+      { id: randomUUID(), title: "Color Scheme Review", client: "StartupXYZ", priority: "Medium", time: "1 hour ago", createdAt: new Date() },
+      { id: randomUUID(), title: "Content Approval", client: "FashionCo", priority: "Medium", time: "3 hours ago", createdAt: new Date() }
+    ];
+
+    sampleFeedback.forEach(f => this.feedbackItems.set(f.id, f));
 
     const sampleTeamMembers: TeamMember[] = [
       {
@@ -149,10 +241,29 @@ export class MemStorage implements IStorage {
         hours: 34,
         projects: ["Social Campaign", "Video Production"],
         createdAt: new Date()
+      },
+      {
+        id: randomUUID(),
+        name: "Emily Davis",
+        initials: "ED",
+        role: "3D Artist",
+        color: "bg-chart-3",
+        utilization: 78,
+        hours: 31,
+        projects: ["Product Launch"],
+        createdAt: new Date()
       }
     ];
 
     sampleTeamMembers.forEach(m => this.teamMembers.set(m.id, m));
+
+    const sampleProfitability: ProjectProfitability[] = [
+      { id: randomUUID(), projectId: project1Id, budget: "$45K", spent: "$38K", hours: "342", revenue: "$135K", roi: "3.6", createdAt: new Date() },
+      { id: randomUUID(), projectId: project2Id, budget: "$62K", spent: "$58K", hours: "487", revenue: "$186K", roi: "3.2", createdAt: new Date() },
+      { id: randomUUID(), projectId: project3Id, budget: "$28K", spent: "$24K", hours: "218", revenue: "$72K", roi: "3.0", createdAt: new Date() }
+    ];
+
+    sampleProfitability.forEach(p => this.projectProfitability.set(p.id, p));
   }
 
   async getUser(id: string): Promise<User | undefined> {
