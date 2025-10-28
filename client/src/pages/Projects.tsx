@@ -2,13 +2,14 @@ import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MoreVertical, Calendar, Users } from "lucide-react";
+import { MoreVertical, Calendar, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Project } from "@shared/schema";
+import { NewProjectDialog } from "@/components/NewProjectDialog";
 
 export default function Projects() {
   const [filter, setFilter] = useState<string>("all");
@@ -54,10 +55,7 @@ export default function Projects() {
             <h1 className="text-4xl font-bold text-foreground mb-2">Projects</h1>
             <p className="text-muted-foreground">Track milestones, automate reminders, and accelerate approvals</p>
           </div>
-          <Button className="gap-2" data-testid="button-new-project" onClick={() => console.log('New project clicked')}>
-            <Plus className="w-4 h-4" />
-            New Project
-          </Button>
+          <NewProjectDialog />
         </div>
 
         <div className="flex flex-wrap gap-2">

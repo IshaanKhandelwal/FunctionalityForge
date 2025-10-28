@@ -2,9 +2,10 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, TrendingUp, Eye, MousePointer, DollarSign, BarChart3 } from "lucide-react";
+import { TrendingUp, Eye, MousePointer, DollarSign, BarChart3 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Campaign } from "@shared/schema";
+import { NewCampaignDialog } from "@/components/NewCampaignDialog";
 
 export default function Marketing() {
   const { data: campaigns, isLoading } = useQuery<Campaign[]>({
@@ -19,10 +20,7 @@ export default function Marketing() {
             <h1 className="text-4xl font-bold text-foreground mb-2">Marketing Campaigns</h1>
             <p className="text-muted-foreground">Automate launches, schedule content, and optimize with AI insights</p>
           </div>
-          <Button className="gap-2" data-testid="button-new-campaign" onClick={() => console.log('New campaign clicked')}>
-            <Plus className="w-4 h-4" />
-            New Campaign
-          </Button>
+          <NewCampaignDialog />
         </div>
 
         <div className="grid md:grid-cols-4 gap-6">
