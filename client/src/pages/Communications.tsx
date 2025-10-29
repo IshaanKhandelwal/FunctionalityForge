@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageSquare, Send, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Message, FeedbackItem } from "@shared/schema";
+import { dummyMessages, dummyFeedbackItems } from "@/lib/dummyData";
 
 export default function Communications() {
   const { data: messages, isLoading: messagesLoading } = useQuery<Message[]>({
@@ -16,7 +17,11 @@ export default function Communications() {
     queryKey: ['/api/feedback']
   });
 
-  const pendingReviews = messages?.filter(m => m.needsReview).length || 0;
+  // Use dummy data as fallback
+  const messagesData = messages || dummyMessages;
+  const feedbackData = feedbackItems || dummyFeedbackItems;
+
+  const pendingReviews = messagesData.filter(m => m.needsReview).length;
 
   return (
     <Layout>
@@ -33,7 +38,7 @@ export default function Communications() {
                 <span className="text-sm text-muted-foreground">Active Threads</span>
                 <MessageSquare className="w-4 h-4 text-primary" />
               </div>
-              <div className="text-3xl font-bold text-foreground">{messages?.length || 0}</div>
+              <div className="text-3xl font-bold text-foreground">{messagesData.length}</div>
             </CardContent>
           </Card>
 
@@ -53,7 +58,7 @@ export default function Communications() {
                 <span className="text-sm text-muted-foreground">Feedback Items</span>
                 <CheckCircle2 className="w-4 h-4 text-chart-3" />
               </div>
-              <div className="text-3xl font-bold text-foreground">{feedbackItems?.length || 0}</div>
+              <div className="text-3xl font-bold text-foreground">{feedbackData.length}</div>
             </CardContent>
           </Card>
 
@@ -76,11 +81,11 @@ export default function Communications() {
             <CardContent>
               {messagesLoading ? (
                 <div className="text-center py-8 text-muted-foreground">Loading messages...</div>
-              ) : !messages || messages.length === 0 ? (
+              ) : messagesData.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">No messages yet</div>
               ) : (
                 <div className="space-y-4">
-                  {messages.slice(0, 5).map((message, i) => (
+                  {messagesData.slice(0, 5).map((message, i) => (
                     <div key={message.id} className="p-4 rounded-lg border border-card-border hover:border-primary/50 transition-all hover-elevate" data-testid={`message-${i}`}>
                       <div className="flex items-start gap-3">
                         <Avatar>
@@ -121,11 +126,11 @@ export default function Communications() {
             <CardContent>
               {feedbackLoading ? (
                 <div className="text-center py-8 text-muted-foreground">Loading...</div>
-              ) : !feedbackItems || feedbackItems.length === 0 ? (
+              ) : feedbackData.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">No feedback items</div>
               ) : (
                 <div className="space-y-3">
-                  {feedbackItems.map((item, i) => (
+                  {feedbackData.map((item, i) => (
                     <div key={item.id} className="p-3 rounded-lg bg-muted/50 border border-card-border hover-elevate" data-testid={`feedback-${i}`}>
                       <div className="flex items-center justify-between mb-2">
                         <Badge variant={item.priority === 'High' ? 'destructive' : 'secondary'}>

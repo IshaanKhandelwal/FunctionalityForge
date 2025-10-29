@@ -7,6 +7,7 @@ import { Upload, Search, Filter, MoreVertical, FileVideo, FileImage, Box, FileTe
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Asset } from "@shared/schema";
+import { dummyAssets } from "@/lib/dummyData";
 
 const getIconForType = (type: string) => {
   switch (type.toLowerCase()) {
@@ -26,7 +27,10 @@ export default function Assets() {
     queryKey: ['/api/assets']
   });
 
-  const filteredAssets = assets?.filter(asset => {
+  // Use dummy data as fallback
+  const assetsData = assets || dummyAssets;
+
+  const filteredAssets = assetsData.filter(asset => {
     const matchesSearch = asset.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === "all" || 
       (filterType === "images" && asset.type === "Image") ||
@@ -34,7 +38,7 @@ export default function Assets() {
       (filterType === "3d" && asset.type === "3D Model") ||
       (filterType === "docs" && asset.type === "Document");
     return matchesSearch && matchesType;
-  }) || [];
+  });
 
   return (
     <Layout>

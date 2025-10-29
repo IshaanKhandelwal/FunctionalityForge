@@ -10,6 +10,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Project } from "@shared/schema";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
+import { dummyProjects } from "@/lib/dummyData";
 
 export default function Projects() {
   const [filter, setFilter] = useState<string>("all");
@@ -18,6 +19,9 @@ export default function Projects() {
   const { data: projects, isLoading } = useQuery<Project[]>({
     queryKey: ['/api/projects']
   });
+
+  // Use dummy data as fallback
+  const projectsData = projects || dummyProjects;
 
   const deleteProject = useMutation({
     mutationFn: async (id: string) => {
@@ -39,7 +43,7 @@ export default function Projects() {
     }
   });
 
-  const filteredProjects = projects?.filter(p => {
+  const filteredProjects = projectsData.filter(p => {
     if (filter === "all") return true;
     if (filter === "active") return p.status !== "Completed";
     if (filter === "completed") return p.status === "Completed";

@@ -6,11 +6,15 @@ import { TrendingUp, Eye, MousePointer, DollarSign, BarChart3 } from "lucide-rea
 import { useQuery } from "@tanstack/react-query";
 import type { Campaign } from "@shared/schema";
 import { NewCampaignDialog } from "@/components/NewCampaignDialog";
+import { dummyCampaigns } from "@/lib/dummyData";
 
 export default function Marketing() {
   const { data: campaigns, isLoading } = useQuery<Campaign[]>({
     queryKey: ['/api/campaigns']
   });
+
+  // Use dummy data as fallback
+  const campaignsData = campaigns || dummyCampaigns;
 
   return (
     <Layout>
@@ -88,7 +92,7 @@ export default function Marketing() {
           <CardContent>
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Loading campaigns...</div>
-            ) : !campaigns || campaigns.length === 0 ? (
+            ) : campaignsData.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">No campaigns yet</p>
                 <Button onClick={() => console.log('Create first campaign')}>
@@ -97,7 +101,7 @@ export default function Marketing() {
               </div>
             ) : (
               <div className="space-y-4">
-                {campaigns.map((campaign, i) => (
+                {campaignsData.map((campaign, i) => (
                   <div key={campaign.id} className="p-4 rounded-lg border border-card-border hover:border-primary/50 transition-all hover-elevate" data-testid={`campaign-${i}`}>
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">

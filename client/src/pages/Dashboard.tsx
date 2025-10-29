@@ -13,6 +13,12 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Project, Message, FeedbackItem } from "@shared/schema";
+import { 
+  dummyProjects, 
+  dummyMessages, 
+  dummyFeedbackItems, 
+  dummyDashboardStats 
+} from "@/lib/dummyData";
 
 interface DashboardStats {
   activeProjects: number;
@@ -38,8 +44,14 @@ export default function Dashboard() {
     queryKey: ['/api/feedback']
   });
 
-  const recentProjects = projects?.slice(0, 4) || [];
-  const pendingTasks = feedbackItems?.slice(0, 3) || [];
+  // Use dummy data as fallback
+  const statsData = stats || dummyDashboardStats;
+  const projectsData = projects || dummyProjects;
+  const messagesData = messages || dummyMessages;
+  const feedbackData = feedbackItems || dummyFeedbackItems;
+
+  const recentProjects = projectsData.slice(0, 4);
+  const pendingTasks = feedbackData.slice(0, 3);
 
   return (
     <Layout>
@@ -52,28 +64,28 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Active Projects"
-            value={stats?.activeProjects.toString() || "0"}
+            value={statsData.activeProjects.toString()}
             change="+12%"
             trend="up"
             icon={FolderKanban}
           />
           <StatCard
             title="Team Utilization"
-            value={`${stats?.teamUtilization || 0}%`}
+            value={`${statsData.teamUtilization}%`}
             change="+5%"
             trend="up"
             icon={Users}
           />
           <StatCard
             title="Campaign Performance"
-            value={`${stats?.campaignPerformance || 0}%`}
+            value={`${statsData.campaignPerformance}%`}
             change="+8%"
             trend="up"
             icon={BarChart3}
           />
           <StatCard
             title="Client Satisfaction"
-            value={`${stats?.clientSatisfaction || 0}/5`}
+            value={`${statsData.clientSatisfaction}/5`}
             change="+0.3"
             trend="up"
             icon={CheckCircle2}

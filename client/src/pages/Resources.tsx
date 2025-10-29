@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Clock, TrendingUp, DollarSign, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { TeamMember, ProjectProfitability, Project } from "@shared/schema";
+import { dummyTeamMembers, dummyProjectProfitability, dummyProjects } from "@/lib/dummyData";
 
 export default function Resources() {
   const { data: teamMembers, isLoading: teamLoading } = useQuery<TeamMember[]>({
@@ -20,11 +21,16 @@ export default function Resources() {
     queryKey: ['/api/projects']
   });
 
-  const avgUtilization = teamMembers && teamMembers.length > 0
-    ? Math.round(teamMembers.reduce((sum, m) => sum + m.utilization, 0) / teamMembers.length)
+  // Use dummy data as fallback
+  const teamData = teamMembers || dummyTeamMembers;
+  const profitabilityData = profitability || dummyProjectProfitability;
+  const projectsData = projects || dummyProjects;
+
+  const avgUtilization = teamData.length > 0
+    ? Math.round(teamData.reduce((sum, m) => sum + m.utilization, 0) / teamData.length)
     : 0;
 
-  const totalHours = teamMembers?.reduce((sum, m) => sum + m.hours, 0) || 0;
+  const totalHours = teamData.reduce((sum, m) => sum + m.hours, 0);
 
   return (
     <Layout>
@@ -80,7 +86,7 @@ export default function Resources() {
                 <span className="text-sm text-muted-foreground">Team Members</span>
                 <Users className="w-4 h-4 text-primary" />
               </div>
-              <div className="text-3xl font-bold text-foreground">{teamMembers?.length || 0}</div>
+              <div className="text-3xl font-bold text-foreground">{teamData.length}</div>
               <div className="text-sm text-muted-foreground mt-1">Active</div>
             </CardContent>
           </Card>
@@ -93,11 +99,11 @@ export default function Resources() {
           <CardContent>
             {teamLoading ? (
               <div className="text-center py-8 text-muted-foreground">Loading team members...</div>
-            ) : !teamMembers || teamMembers.length === 0 ? (
+            ) : teamData.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">No team members yet</div>
             ) : (
               <div className="space-y-6">
-                {teamMembers.map((member, i) => (
+                {teamData.map((member, i) => (
                   <div key={member.id} data-testid={`team-member-${i}`}>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -145,12 +151,12 @@ export default function Resources() {
           <CardContent>
             {profLoading ? (
               <div className="text-center py-8 text-muted-foreground">Loading profitability data...</div>
-            ) : !profitability || profitability.length === 0 ? (
+            ) : profitabilityData.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">No profitability data yet</div>
             ) : (
               <div className="space-y-4">
-                {profitability.map((prof, i) => {
-                  const project = projects?.find(p => p.id === prof.projectId);
+                {profitabilityData.map((prof, i) => {
+                  const project = projectsData.find(p => p.id === prof.projectId);
                   const roi = parseFloat(prof.roi.toString());
                   
                   return (
